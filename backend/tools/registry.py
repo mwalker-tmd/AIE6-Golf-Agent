@@ -3,14 +3,13 @@ Tool registry for the agent. Add tools here to make them available to your agent
 """
 
 from langchain.tools import Tool
-from backend.tools.dummy_tool import echo_tool
+from backend.tools.search_golfpedia_tool import search_golfpedia
 
 tools = [
     Tool(
-        name="echo",
-        func=echo_tool,
-        description="Repeats back what the user says. Used as a template tool."
-    )
+        name="search_golfpedia",
+        func=search_golfpedia,
+        description="Searches the web for general golf-related knowledge using Tavily.",
+    ),
+    # Add other tools here later
 ]
-
-# TODO: Add additional tools here as needed
