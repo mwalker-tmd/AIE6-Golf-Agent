@@ -13,7 +13,7 @@ import os
 from dotenv import load_dotenv
 from langchain.agents import initialize_agent
 from langchain.agents.agent_types import AgentType
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from backend.tools.registry import tools
 
 # Load environment variables at module level

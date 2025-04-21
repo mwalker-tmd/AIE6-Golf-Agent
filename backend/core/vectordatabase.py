@@ -6,7 +6,7 @@ TODO:
 - Customize embedding provider as needed.
 """
 
-from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 from backend.core.embeddings import EmbeddingProvider
 
 class VectorDatabase:

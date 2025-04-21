@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Form
 from fastapi.responses import StreamingResponse, JSONResponse
 from dotenv import load_dotenv
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from ..core.vector_store import VectorStore
 from ..prompts.prompt_manager import PromptManager
 
