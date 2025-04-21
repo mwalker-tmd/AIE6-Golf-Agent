@@ -28,7 +28,21 @@ def get_pro_stats(query: str) -> str:
     if not selected_stat:
         return "Could not determine which stat to compare."
 
-    found_players = [name for name in MOCK_STATS_DB if name.lower() in query.lower()]
+    # Find players in the query
+    found_players = []
+    for player in MOCK_STATS_DB:
+        if player.lower() in query.lower():
+            found_players.append(player)
+    
+    # If no exact matches, try partial matches
+    if not found_players:
+        for player in MOCK_STATS_DB:
+            # Split player name into parts and check if any part is in the query
+            name_parts = player.lower().split()
+            for part in name_parts:
+                if part in query.lower() and len(part) > 2:  # Only match parts longer than 2 chars
+                    found_players.append(player)
+                    break
 
     if not found_players:
         return "Please specify at least one known player."
