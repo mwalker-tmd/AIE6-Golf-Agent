@@ -16,6 +16,7 @@ dependencies = [
     "langchain-community>=0.0.22",
     "langchain-openai>=0.0.8",
     "pytest>=7.0.0",  # Added pytest dependency
+    "pytest-asyncio>=0.23.0",  # Added pytest-asyncio dependency
     "tavily-python>=0.3.0",  # Added tavily dependency
     "langgraph>=0.0.15",  # Added langgraph dependency
 ]
