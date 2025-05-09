@@ -1,19 +1,33 @@
-from fastapi import APIRouter, Form
-from backend.agents.agent_loader import load_agent
+from fastapi import APIRouter
+from pydantic import BaseModel
+from backend.agents.golf_langgraph import graph as agent
 
 router = APIRouter()
 
-agent = load_agent()
+class AgentRequest(BaseModel):
+    query: str
 
-@router.post("/agent", tags=["Agent"])
-async def run_agent(query: str = Form(...)):
+@router.post(
+    "/agent",
+    tags=["Agent"],
+    openapi_extra={
+        "requestBody": {
+            "content": {
+                "application/json": {
+                    "schema": {"$ref": "#/components/schemas/AgentRequest"}
+                }
+            }
+        }
+    }
+)
+async def run_agent(request: AgentRequest):
     """
     Executes the agent with the given query input.
 
     Parameters
     ----------
     query : str
-        The input prompt or question from the user.
+        A JSON object with a "query" key.
 
     Returns
     -------
@@ -24,9 +38,12 @@ async def run_agent(query: str = Form(...)):
             "response": "You said: Hello world"
         }
     """
-    result = await agent.ainvoke({"input": query})
-    
-    # Extract the useful part
-    output = result.get("output") if isinstance(result, dict) else result
+    query = request.query
+    debug_print(f"🧪 query object: {query}")
+    payload = {"input": query}
 
-    return {"response": output}
+    debug_print(f"🧪 Invoking agent object {agent} with: {payload}")
+    result = await agent.ainvoke(payload)
+    
+    #return {"response": output}
+    return {"response": result["final_response"]}
