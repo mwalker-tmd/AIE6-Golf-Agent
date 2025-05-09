@@ -36,6 +36,28 @@ def get_tool_route(state: AgentState) -> str:
         return "course_insights"
     else:
         return "search_golfpedia"
+    
+def route_with_llm(state: AgentState) -> str:
+    query = state.get("input")
+    if not query:
+        raise ValueError("[ROUTER FUNC ERROR] No input found in state.")
+
+    llm = get_llm()
+    response = llm.invoke([
+        HumanMessage(content=f"""Classify this golf-related query into one of the following categories:
+- "get_pro_stats": if it compares or asks about player stats
+- "course_insights": if it's asking about a specific golf course
+- "search_golfpedia": for all other general golf knowledge
+
+Respond with just one word: get_pro_stats, course_insights, or search_golfpedia.
+
+Query: "{query}" """)
+    ])
+
+    tool_name = response.content.strip()
+    debug_print(f"[ROUTER FUNC w/ LLM] Routed '{query}' → {tool_name}")
+    return tool_name
+
 
 # Router node that simply passes state through
 def pass_through_router(state: AgentState) -> AgentState:
@@ -76,7 +98,9 @@ for tool_name in tool_map:
 builder.add_node("summarize", RunnableLambda(summarize_result))
 
 builder.set_entry_point("router")
-builder.add_conditional_edges("router", get_tool_route)
+# builder.add_conditional_edges("router", get_tool_route)
+builder.add_conditional_edges("router", route_with_llm)
+
 for name in tool_map:
     builder.add_edge(name, "summarize")
 builder.add_edge("summarize", END)

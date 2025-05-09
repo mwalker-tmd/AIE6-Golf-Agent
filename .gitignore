@@ -203,3 +203,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary directory exclusion
+frontend_backup/

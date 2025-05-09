@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from backend.agents.golf_langgraph import graph as agent
+from backend.tools.utils import debug_print
 
 router = APIRouter()
 
@@ -47,3 +48,4 @@ async def run_agent(request: AgentRequest):
     
     #return {"response": output}
     return {"response": result["final_response"]}
+

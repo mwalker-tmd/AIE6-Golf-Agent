@@ -25,18 +25,20 @@ def mock_search_response():
 @pytest.fixture
 def mock_detail_response():
     return {
-        "location": {
-            "address": "123 Golf Lane, Pine Valley, NJ 08021"
-        },
-        "tees": {
-            "male": [
-                {
-                    "course_rating": 74.1,
-                    "slope_rating": 155,
-                    "total_yards": 7280,
-                    "par_total": 72
-                }
-            ]
+        "course": {
+            "location": {
+                "address": "123 Golf Lane, Pine Valley, NJ 08021"
+            },
+            "tees": {
+                "male": [
+                    {
+                        "course_rating": 74.1,
+                        "slope_rating": 155,
+                        "total_yards": 7280,
+                        "par_total": 72
+                    }
+                ]
+            }
         }
     }
 
@@ -72,7 +74,7 @@ def test_course_insights_successful(mock_search_response, mock_detail_response, 
     mock_requests_get.side_effect = [search_response, detail_response]
     
     # Call the function
-    result = course_insights.invoke("Pine Valley")
+    result = course_insights.invoke("Pine Valley Course")
     
     # Verify the result
     expected_result = (
@@ -88,7 +90,7 @@ def test_course_insights_successful(mock_search_response, mock_detail_response, 
     mock_requests_get.assert_any_call(
         "https://api.golfcourseapi.com/v1/search", 
         headers={"Authorization": "Key fake-api-key"}, 
-        params={"search_query": "Pine Valley"}
+        params={"search_query": "Pine Valley Course"}
     )
     mock_requests_get.assert_any_call(
         "https://api.golfcourseapi.com/v1/courses/12345", 
@@ -120,8 +122,10 @@ def test_course_insights_no_tee_data(mock_search_response, mock_requests_get):
     
     detail_response = MagicMock()
     detail_response.json.return_value = {
-        "location": {"address": "123 Golf Lane"},
-        "tees": {"male": [], "female": []}
+        "course": {
+            "location": {"address": "123 Golf Lane"},
+            "tees": {"male": [], "female": []}
+        }
     }
     detail_response.raise_for_status.return_value = None
     
@@ -143,17 +147,19 @@ def test_course_insights_female_tee_data(mock_search_response, mock_requests_get
     
     detail_response = MagicMock()
     detail_response.json.return_value = {
-        "location": {"address": "123 Golf Lane, Pine Valley, NJ 08021"},
-        "tees": {
-            "male": [],
-            "female": [
-                {
-                    "course_rating": 72.5,
-                    "slope_rating": 140,
-                    "total_yards": 6500,
-                    "par_total": 72
-                }
-            ]
+        "course": {
+            "location": {"address": "123 Golf Lane, Pine Valley, NJ 08021"},
+            "tees": {
+                "male": [],
+                "female": [
+                    {
+                        "course_rating": 72.5,
+                        "slope_rating": 140,
+                        "total_yards": 6500,
+                        "par_total": 72
+                    }
+                ]
+            }
         }
     }
     detail_response.raise_for_status.return_value = None
@@ -214,18 +220,29 @@ def test_course_insights_empty_query(query, mock_requests_get):
     assert result == f"No courses found for query '{query}'."
 
 def test_course_insights_missing_location(mock_search_response, mock_requests_get):
+    """Test when location data is missing"""
     search_response = MagicMock()
     search_response.json.return_value = mock_search_response
     search_response.raise_for_status.return_value = None
 
     detail_response = MagicMock()
     detail_response.json.return_value = {
-        "tees": {"male": [{"course_rating": 74.1, "slope_rating": 155, "total_yards": 7280, "par_total": 72}]}
-        # Missing "location"
+        "course": {
+            "tees": {"male": [{"course_rating": 74.1, "slope_rating": 155, "total_yards": 7280, "par_total": 72}]}
+            # Missing "location"
+        }
     }
     detail_response.raise_for_status.return_value = None
 
     mock_requests_get.side_effect = [search_response, detail_response]
     result = course_insights.invoke("Pine Valley")
-    assert "Pine Valley Golf Club - Championship Course" in result
-    assert "Address not available" in result
+    
+    # Verify the result
+    expected_result = (
+        "Pine Valley Golf Club - Championship Course (ID: 12345)\n"
+        "Location: Address not available\n"
+        "Rating: 74.1 | Slope: 155\n"
+        "Yards: 7280 | Par: 72\n"
+        "Hardest Hole: TBD\n"
+    )
+    assert result == expected_result
