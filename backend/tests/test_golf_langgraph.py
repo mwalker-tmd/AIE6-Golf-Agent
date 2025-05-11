@@ -1,7 +1,7 @@
 import pytest
 import asyncio
 from unittest.mock import patch, MagicMock
-from backend.agents.golf_langgraph import get_tool_route, AgentState, tool_map
+from backend.agents.golf_langgraph import route_with_llm, AgentState, tool_map
 
 # Create a mock graph that we can use for testing
 @pytest.fixture
@@ -12,7 +12,7 @@ def mock_graph():
         query = input_dict.get("input", "")
         
         # Determine which tool to use based on the query
-        tool_name = get_tool_route({"input": query})
+        tool_name = route_with_llm({"input": query})["next"]
         
         # Return a mock result
         return {
@@ -50,10 +50,11 @@ def mock_tools():
 @pytest.mark.asyncio
 async def test_graph_pro_stats_query(mock_graph):
     """Test the graph with a pro stats query."""
-    # Patch the graph with our mock
-    with patch('backend.agents.golf_langgraph.graph', mock_graph):
+    # Patch the graph and get_llm with our mocks
+    with patch('backend.agents.golf_langgraph.graph', mock_graph), \
+         patch('backend.agents.golf_langgraph.get_llm') as mock_llm:
+        mock_llm.return_value.invoke.return_value.content = "get_pro_stats"
         result = await mock_graph.ainvoke({"input": "Compare Scottie Scheffler and Rory McIlroy in putting"})
-        
         # Check the final response
         assert result["final_response"] == "This is a mock summary response for Compare Scottie Scheffler and Rory McIlroy in putting"
         assert result["tool_result"] == "Mock result for get_pro_stats"
@@ -61,10 +62,10 @@ async def test_graph_pro_stats_query(mock_graph):
 @pytest.mark.asyncio
 async def test_graph_course_insights_query(mock_graph):
     """Test the graph with a course insights query."""
-    # Patch the graph with our mock
-    with patch('backend.agents.golf_langgraph.graph', mock_graph):
+    with patch('backend.agents.golf_langgraph.graph', mock_graph), \
+         patch('backend.agents.golf_langgraph.get_llm') as mock_llm:
+        mock_llm.return_value.invoke.return_value.content = "course_insights"
         result = await mock_graph.ainvoke({"input": "What is the course layout at Pine Valley?"})
-        
         # Check the final response
         assert result["final_response"] == "This is a mock summary response for What is the course layout at Pine Valley?"
         assert result["tool_result"] == "Mock result for course_insights"
@@ -72,34 +73,36 @@ async def test_graph_course_insights_query(mock_graph):
 @pytest.mark.asyncio
 async def test_graph_search_golfpedia_query(mock_graph):
     """Test the graph with a search golfpedia query."""
-    # Patch the graph with our mock
-    with patch('backend.agents.golf_langgraph.graph', mock_graph):
+    with patch('backend.agents.golf_langgraph.graph', mock_graph), \
+         patch('backend.agents.golf_langgraph.get_llm') as mock_llm:
+        mock_llm.return_value.invoke.return_value.content = "search_golfpedia"
         result = await mock_graph.ainvoke({"input": "What is the history of golf?"})
-        
         # Check the final response
         assert result["final_response"] == "This is a mock summary response for What is the history of golf?"
         assert result["tool_result"] == "Mock result for search_golfpedia"
 
-def test_get_tool_route():
+def test_route_with_llm(mock_llm):
     """Test the tool routing logic."""
     # Test pro stats route
     state = AgentState(input="Compare Scottie Scheffler and Rory McIlroy in putting")
-    assert get_tool_route(state) == "get_pro_stats"
+    mock_llm.return_value.invoke.return_value.content = "get_pro_stats"
+    assert route_with_llm(state)["next"] == "get_pro_stats"
     
     # Test course insights route - update to match current implementation
     state = AgentState(input="Tell me about Pine Valley Golf Club")
-    # The current implementation doesn't route "Tell me about Pine Valley Golf Club" to course_insights
-    # because it doesn't contain "course" or "yardage" in the query
-    assert get_tool_route(state) == "search_golfpedia"
+    mock_llm.return_value.invoke.return_value.content = "search_golfpedia"
+    assert route_with_llm(state)["next"] == "search_golfpedia"
     
     # Test course insights route with a query that should match
     state = AgentState(input="What is the course layout at Pine Valley?")
-    assert get_tool_route(state) == "course_insights"
+    mock_llm.return_value.invoke.return_value.content = "course_insights"
+    assert route_with_llm(state)["next"] == "course_insights"
     
     # Test search golfpedia route
     state = AgentState(input="What is the history of golf?")
-    assert get_tool_route(state) == "search_golfpedia"
+    mock_llm.return_value.invoke.return_value.content = "search_golfpedia"
+    assert route_with_llm(state)["next"] == "search_golfpedia"
     
     # Test error handling
     with pytest.raises(ValueError):
-        get_tool_route(AgentState()) 
+        route_with_llm(AgentState()) 
