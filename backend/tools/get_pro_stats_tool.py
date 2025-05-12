@@ -1,5 +1,5 @@
 from langchain.tools import tool
-from backend.tools.utils import debug_print
+from backend.core.logging_config import logger
 
 MOCK_STATS_DB = {
     "Scottie Scheffler": {"SG Putting": 0.73, "Driving Distance": 311.2},
@@ -11,7 +11,7 @@ MOCK_STATS_DB = {
 @tool
 def get_pro_stats(query: str) -> str:
     """Returns mock stat data for one or two PGA players from a simulated database."""
-    debug_print(f"[TOOL CALLED] get_pro_stats: {query}")
+    logger.debug(f"[TOOL CALLED] get_pro_stats: {query}")
 
     stat_keywords = ["putting", "distance", "accuracy", "driving"]
     selected_stat = None

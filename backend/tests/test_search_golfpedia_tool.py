@@ -36,9 +36,13 @@ def test_search_golfpedia_no_answer(mock_tavily_empty_response, mock_tavily_clie
 def test_search_golfpedia_api_error(mock_tavily_client):
     """Test handling of API error"""
     mock_tavily_client.search.side_effect = Exception("API Error")
-    with pytest.raises(Exception) as exc_info:
-        search_golfpedia.invoke("What is golf?")
-    assert str(exc_info.value) == "API Error"
+    
+    # Call the function
+    result = search_golfpedia.invoke("golf rules")
+    
+    # Verify the error message is returned
+    assert "Error searching Golfpedia" in result
+    assert "API Error" in result
 
 def test_search_golfpedia_empty_query(mock_tavily_empty_response, mock_tavily_client):
     """Test handling of empty query"""

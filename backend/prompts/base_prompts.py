@@ -1,4 +1,8 @@
 import re
+# import os
+# import json
+# from langchain.prompts import PromptTemplate
+from backend.core.logging_config import logger
 
 
 
@@ -85,10 +89,14 @@ class AssistantRolePrompt(RolePrompt):
         super().__init__(prompt, "assistant")
 
 
-if __name__ == "__main__":
+def test_prompt():
+    """Test the prompt template."""
     prompt = BasePrompt("Hello {name}, you are {age} years old")
-    print(prompt.format_prompt(name="John", age=30))
+    logger.debug(f"Formatted prompt: {prompt.format_prompt(name='John', age=30)}")
+    logger.debug(f"Message: {prompt.create_message(name='John', age=30)}")
+    logger.debug(f"Input variables: {prompt.get_input_variables()}")
 
     prompt = InstructionPrompt("Hello {name}, you are {age} years old")
-    print(prompt.create_message(name="John", age=30))
-    print(prompt.get_input_variables())
+    logger.debug(f"Formatted prompt: {prompt.format_prompt(name='John', age=30)}")
+    logger.debug(f"Message: {prompt.create_message(name='John', age=30)}")
+    logger.debug(f"Input variables: {prompt.get_input_variables()}")
