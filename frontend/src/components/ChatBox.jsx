@@ -26,7 +26,7 @@ export default function ChatBox() {
     setIsStreaming(true)
 
     try {
-      const res = await fetch(`${getApiUrl()}/agent`, {
+      const res = await fetch(`${getApiUrl()}/query`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
