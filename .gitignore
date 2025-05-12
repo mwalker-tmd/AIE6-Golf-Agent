@@ -204,5 +204,8 @@ dist-ssr
 *.sln
 *.sw?
 
-# Temporary directory exclusion
-frontend_backup/
+# Data files
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep

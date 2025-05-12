@@ -12,13 +12,17 @@ dependencies = [
     "pypdf",  # for PDF processing
     "PyPDF2>=3.0.0",
     "numpy>=1.24.0",
+    "pandas>=2.0.0",  # for data analysis
     "langchain>=0.1.0",
     "langchain-community>=0.0.22",
-    "langchain-openai>=0.0.8",
+    "langchain-openai>=0.0.8", 
+    "qdrant-client>=1.14.2",  # Vector storage
     "pytest>=7.0.0",  # Added pytest dependency
-    "pytest-asyncio>=0.23.0",  # Added pytest-asyncio dependency
+    "pytest-asyncio>=0.23.0",  # Added pytest-asyncio dependency    
+    "pytest-cov>=4.1.0",  # Coverage reporting
     "tavily-python>=0.3.0",  # Added tavily dependency
     "langgraph>=0.0.15",  # Added langgraph dependency
+    "sentence-transformers>=2.2.2,<3.0.0", #used for embeddings 
 ]
 
 [build-system]
