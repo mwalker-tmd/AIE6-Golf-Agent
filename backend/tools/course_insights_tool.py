@@ -34,9 +34,13 @@ def course_insights(search_query: str) -> str:
         # Step 1: Search
         search_resp = requests.get(f"{BASE_URL}/search", headers=get_headers(), params={"search_query": search_query})
         search_resp.raise_for_status()
-        courses = search_resp.json().get("courses", [])
-        logger.debug(f"[TOOL RESULT] course_insights: {json.dumps(search_resp.json())}")
-        logger.debug(f"Number of courses found: {len(courses)}")
+        try:
+            courses = search_resp.json().get("courses", [])
+            logger.debug(f"[TOOL RESULT] course_insights: {json.dumps(search_resp.json())}")
+            logger.debug(f"Number of courses found: {len(courses)}")
+        except json.JSONDecodeError as e:
+            logger.error(f"[ERROR] JSONDecodeError: {e}")
+            return "An unexpected error occurred: Invalid JSON"
 
         if not courses:
             return f"No courses found for query '{search_query}'."
@@ -50,8 +54,12 @@ def course_insights(search_query: str) -> str:
 
             detail_resp = requests.get(f"{BASE_URL}/courses/{course_id}", headers=get_headers())
             detail_resp.raise_for_status()
-            data = detail_resp.json()
-            course = data.get("course", {})
+            try:
+                data = detail_resp.json()
+                course = data.get("course", {})
+            except json.JSONDecodeError as e:
+                logger.error(f"[ERROR] JSONDecodeError: {e}")
+                return "An unexpected error occurred: Invalid JSON"
 
             tees = course.get("tees", {})
             all_tees = []
