@@ -6,6 +6,7 @@ from langchain.tools import tool
 from backend.tools.utils import debug_print
 from openai import OpenAI
 from dotenv import load_dotenv
+import json
 
 # Load environment variables
 load_dotenv()
@@ -43,7 +44,7 @@ def preprocess_query_with_llm(query: str) -> str:
     )
 
     user_msg = f"Query: {query}"
-
+    
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
@@ -53,12 +54,14 @@ def preprocess_query_with_llm(query: str) -> str:
         temperature=0
     )
 
-    parsed = eval(response.choices[0].message.content)  # Replace with safer parsing in production
-
-    return (
-        f"The golfer is planning a {parsed['distance']}-yard shot and wants to "
-        f"{parsed['intent']} a {parsed['shape']} using {parsed['club']}."
-    )
+    try:
+        parsed = json.loads(response.choices[0].message.content)
+        return (
+            f"The golfer is planning a {parsed['distance']}-yard shot and wants to "
+            f"{parsed['intent']} a {parsed['shape']} using {parsed['club']}."
+        )
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Failed to parse LLM response as JSON: {e}")
 
 @tool
 def get_shot_recommendations(query: str) -> str:
