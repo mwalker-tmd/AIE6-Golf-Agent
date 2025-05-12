@@ -1,1 +1,1 @@
-"""Test package for the golf agent backend.""" 
+"""Test package for the golf caddie agent backend.""" 
