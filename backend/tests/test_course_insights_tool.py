@@ -195,12 +195,13 @@ def test_course_insights_unexpected_error(mock_requests_get):
     """Test handling of unexpected exception"""
     # Set up the mock to raise an unexpected exception
     mock_requests_get.side_effect = ValueError("Invalid JSON")
-    
+
     # Call the function
     result = course_insights.invoke("Pine Valley")
-    
+
     # Verify the result
-    assert "Unexpected exception" in result
+    assert "An unexpected error occurred" in result
+    assert "Invalid JSON" in result
 
 @pytest.mark.parametrize("query", ["", "   ", "\n", "\t"])
 def test_course_insights_empty_query(query, mock_requests_get):

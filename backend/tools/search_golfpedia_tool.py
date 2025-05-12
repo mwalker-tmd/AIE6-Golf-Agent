@@ -3,7 +3,7 @@ import json
 from tavily import TavilyClient
 from langchain.tools import tool
 from backend.tools.constants_tools import NO_SUMMARY_AVAILABLE
-from backend.tools.utils import debug_print
+from backend.core.logging_config import logger
 
 # Initialize the client lazily to allow for environment variable mocking in tests
 def get_tavily_client():
@@ -11,11 +11,19 @@ def get_tavily_client():
 
 @tool
 def search_golfpedia(query: str) -> str:
-    """Searches the web for general golf-related knowledge using Tavily."""
-    debug_print(f"[TOOL CALLED] search_golfpedia: {query}")
+    """Searches the web for general golf-related knowledge. Examples include: information about golf terms, rules, and concepts."""
+    logger.debug(f"[TOOL CALLED] search_golfpedia: {query}")
+    
+    try:
+        result = search_golfpedia_api(query)
+        logger.debug(f"[TOOL RESULT] search_golfpedia: {json.dumps(result, indent=2)}")
+        return result
+    except Exception as e:
+        return f"Error searching Golfpedia: {str(e)}"
+
+def search_golfpedia_api(query: str) -> str:
     tavily = get_tavily_client()
     result = tavily.search(query=query, search_depth="basic")
-    debug_print(f"[TOOL RESULT] search_golfpedia: {json.dumps(result, indent=2)}")
     
     # If there's a direct answer, return it
     if result.get("answer"):

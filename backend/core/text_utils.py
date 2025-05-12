@@ -1,6 +1,7 @@
 import os
 from typing import List
 import PyPDF2
+from backend.core.logging_config import logger
 
 #TODO: Split into multiple files when warranted (e.g. /loaders, /splitters, /parsers, etc.)
 
@@ -68,14 +69,14 @@ class PDFLoader:
     def __init__(self, path: str):
         self.documents = []
         self.path = path
-        print(f"PDFLoader initialized with path: {self.path}")
+        logger.debug(f"PDFLoader initialized with path: {self.path}")
 
     def load(self):
-        print(f"Loading PDF from path: {self.path}")
-        print(f"Path exists: {os.path.exists(self.path)}")
-        print(f"Is file: {os.path.isfile(self.path)}")
-        print(f"Is directory: {os.path.isdir(self.path)}")
-        print(f"File permissions: {oct(os.stat(self.path).st_mode)[-3:]}")
+        logger.debug(f"Loading PDF from path: {self.path}")
+        logger.debug(f"Path exists: {os.path.exists(self.path)}")
+        logger.debug(f"Is file: {os.path.isfile(self.path)}")
+        logger.debug(f"Is directory: {os.path.isdir(self.path)}")
+        logger.debug(f"File permissions: {oct(os.stat(self.path).st_mode)[-3:]}")
         
         try:
             # Try to open the file first to verify access
@@ -127,11 +128,11 @@ if __name__ == "__main__":
     loader.load()
     splitter = CharacterTextSplitter()
     chunks = splitter.split_texts(loader.documents)
-    print(len(chunks))
-    print(chunks[0])
-    print("--------")
-    print(chunks[1])
-    print("--------")
-    print(chunks[-2])
-    print("--------")
-    print(chunks[-1])
+    logger.debug(f"{len(chunks)}")
+    logger.debug(f"{chunks[0]}")
+    logger.debug("--------")
+    logger.debug(f"{chunks[1]}")
+    logger.debug("--------")
+    logger.debug(f"{chunks[-2]}")
+    logger.debug("--------")
+    logger.debug(f"{chunks[-1]}")

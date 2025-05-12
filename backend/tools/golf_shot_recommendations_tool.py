@@ -3,7 +3,7 @@ from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
 from qdrant_client.http.exceptions import UnexpectedResponse
 from langchain.tools import tool
-from backend.tools.utils import debug_print
+from backend.core.logging_config import logger
 from openai import OpenAI
 from dotenv import load_dotenv
 import json
@@ -69,7 +69,7 @@ def get_shot_recommendations(query: str) -> str:
     Retrieves relevant golf shot recommendations based on the query using semantic search.
     Useful for questions about club selection, shot technique, or avoiding certain shot patterns.
     """
-    debug_print(f"[TOOL CALLED] get_shot_recommendations: {query}")
+    logger.debug(f"[TOOL CALLED] get_shot_recommendations: {query}")
     
     # structure the query to more closely align with the embedded data.
     preprocessed_query = preprocess_query_with_llm(query)

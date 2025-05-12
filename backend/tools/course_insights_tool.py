@@ -2,7 +2,7 @@ import os
 import json
 import requests
 from langchain.tools import tool
-from backend.tools.utils import debug_print
+from backend.core.logging_config import logger
 
 BASE_URL = "https://api.golfcourseapi.com/v1"
 
@@ -15,9 +15,17 @@ def get_headers():
 
 @tool
 def course_insights(search_query: str) -> str:
-    """Fetches detailed course info for a given golf course name using GolfCourseAPI."""
+    """
+    Get information about golf courses, including course details, tee options, and ratings.
     
-    debug_print(f"[TOOL CALLED] course_insights: {search_query}")
+    Args:
+        search_query: A query string to search for golf courses
+        
+    Returns:
+        A JSON string containing course information
+    """
+    
+    logger.debug(f"[TOOL CALLED] course_insights: {search_query}")
 
     if not search_query.strip():
         return f"No courses found for query '{search_query}'."
@@ -26,13 +34,18 @@ def course_insights(search_query: str) -> str:
         # Step 1: Search
         search_resp = requests.get(f"{BASE_URL}/search", headers=get_headers(), params={"search_query": search_query})
         search_resp.raise_for_status()
-        courses = search_resp.json().get("courses", [])
-        debug_print(f"[TOOL RESULT] course_insights: {json.dumps(search_resp.json())}")
+        try:
+            courses = search_resp.json().get("courses", [])
+            logger.debug(f"[TOOL RESULT] course_insights: {json.dumps(search_resp.json())}")
+            logger.debug(f"Number of courses found: {len(courses)}")
+        except json.JSONDecodeError as e:
+            logger.error(f"[ERROR] JSONDecodeError: {e}")
+            return "An unexpected error occurred: Invalid JSON"
 
         if not courses:
             return f"No courses found for query '{search_query}'."
         else:
-            debug_print(f"Number of courses found: {len(courses)}")
+            logger.debug(f"Number of courses found: {len(courses)}")
 
         for course_meta in courses:
             course_id = course_meta["id"]
@@ -41,8 +54,12 @@ def course_insights(search_query: str) -> str:
 
             detail_resp = requests.get(f"{BASE_URL}/courses/{course_id}", headers=get_headers())
             detail_resp.raise_for_status()
-            data = detail_resp.json()
-            course = data.get("course", {})
+            try:
+                data = detail_resp.json()
+                course = data.get("course", {})
+            except json.JSONDecodeError as e:
+                logger.error(f"[ERROR] JSONDecodeError: {e}")
+                return "An unexpected error occurred: Invalid JSON"
 
             tees = course.get("tees", {})
             all_tees = []
@@ -52,7 +69,7 @@ def course_insights(search_query: str) -> str:
             if "female" in tees and tees["female"]:
                 all_tees.extend(tees["female"])
 
-            debug_print(f"Number of tees found: {len(all_tees)}")
+            logger.debug(f"Number of tees found: {len(all_tees)}")
             
             if all_tees:
                 tee = all_tees[0]  # Use the first tee available
@@ -68,8 +85,8 @@ def course_insights(search_query: str) -> str:
         return f"No tee data available for any course found for query '{search_query}'."
 
     except requests.HTTPError as e:
-        print(f"[ERROR] HTTPError: {e}")
+        logger.error(f"[ERROR] HTTPError: {e}")
         return f"API request failed: {e}"
     except Exception as e:
-        print(f"[ERROR] Unexpected exception: {e}")
-        return f"Unexpected exception: {e}"
+        logger.error(f"[ERROR] Unexpected exception: {e}")
+        return f"An unexpected error occurred: {str(e)}"

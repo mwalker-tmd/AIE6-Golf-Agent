@@ -74,6 +74,27 @@ The application uses environment variables for configuration. See `.env.template
 - `ALLOWED_ORIGINS` - CORS allowed origins (comma-separated)
 - `ENVIRONMENT` - Set to "production" or "development"
 - `DEBUG` - Enable debug mode when set to "true"
+- `LOG_LEVEL` - Set the default log level (defaults to INFO)
+- `LOG_FORMAT` - Customize the log message format
+
+### Logging Configuration
+
+The application uses a centralized logging system that can be configured through:
+
+1. Environment variables:
+   - `LOG_LEVEL`: Set the default log level (defaults to INFO)
+   - `LOG_FORMAT`: Customize the log message format
+
+2. API endpoint:
+   - `POST /api/logging/level`: Update the log level at runtime
+   - Example: `curl -X POST "http://localhost:8000/api/logging/level" -H "Content-Type: application/json" -d '{"level": "DEBUG"}'`
+
+Available log levels:
+- DEBUG: Detailed information for debugging
+- INFO: General operational information
+- WARNING: Warning messages for potentially harmful situations
+- ERROR: Error messages for serious problems
+- CRITICAL: Critical messages for fatal errors
 
 ## Development Setup
 

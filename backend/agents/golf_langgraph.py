@@ -7,7 +7,7 @@ from langgraph.graph import StateGraph, END
 from langchain.agents import Tool
 from typing import TypedDict, Optional
 from backend.tools.registry import tools
-from backend.tools.utils import debug_print
+from backend.core.logging_config import logger
 
 load_dotenv()
 
@@ -43,10 +43,9 @@ Query: "{query}" """)
     ])
 
     tool_name = response.content.strip()
-    debug_print(f"[ROUTER FUNC w/ LLM] Routed '{query}' → {tool_name}")
-    print(f"[DEBUG] Router output: '{tool_name}'")
-    # return tool_name
-    return {"next": tool_name}  # ✅ FIXED: wrap the string in a dictionary
+    logger.debug(f"[ROUTER FUNC w/ LLM] Routed '{query}' → {tool_name}")
+    logger.debug(f"[DEBUG] Router output: '{tool_name}'")
+    return {"next": tool_name}
 
 # Tool execution logic
 tool_map = {t.name: t for t in tools}
@@ -54,16 +53,16 @@ tool_map = {t.name: t for t in tools}
 def wrap_tool(name):
     tool = tool_map[name]
     def run(state: AgentState):
-        debug_print(f"[TOOL NODE] Running tool: {name} with input: {state.get('input')}")
+        logger.debug(f"[TOOL NODE] Running tool: {name} with input: {state.get('input')}")
         result = tool.invoke(state["input"])
-        print(f"[DEBUG] Tool '{name}' result type: {type(result)} value: {result}")
-        print(f"[DEBUG] Tool.invoke for '{name}': {getattr(tool, 'invoke', None)}, type: {type(getattr(tool, 'invoke', None))}")
+        logger.debug(f"[DEBUG] Tool '{name}' result type: {type(result)} value: {result}")
+        logger.debug(f"[DEBUG] Tool.invoke for '{name}': {getattr(tool, 'invoke', None)}, type: {type(getattr(tool, 'invoke', None))}")
         return AgentState({**state, "tool_result": result})
     return RunnableLambda(run)
 
 # Summary node
 def summarize_result(state: AgentState):
-    debug_print(f"[SUMMARY NODE] Received tool result: {state.get('tool_result')}")
+    logger.debug(f"[SUMMARY NODE] Received tool result: {state.get('tool_result')}")
     summary = get_llm().invoke([
         HumanMessage(content=f'''You are a golf research assistant. Here is the tool result:
 
@@ -71,8 +70,7 @@ def summarize_result(state: AgentState):
 
 Please summarize the answer as a helpful response to the user query: "{state["input"]}"''')
     ])
-    # return AgentState({**state, "final_response": summary.content})
-    return {"final_response": summary.content}  # ✅ Return plain dict
+    return {"final_response": summary.content}
 
 def create_graph():
     workflow = StateGraph(AgentState)
@@ -80,7 +78,7 @@ def create_graph():
     # Add nodes
     workflow.add_node("router", route_with_llm)
     for tool_name in tool_map:
-        print(f"[DEBUG] Adding node: {tool_name} with {wrap_tool(tool_name)}")
+        logger.debug(f"[DEBUG] Adding node: {tool_name} with {wrap_tool(tool_name)}")
         workflow.add_node(tool_name, wrap_tool(tool_name))
     workflow.add_node("summarize", RunnableLambda(summarize_result))
 
@@ -91,9 +89,9 @@ def create_graph():
     workflow.add_edge("summarize", END)
 
     # debug info:
-    print(f"[DEBUG] All nodes in workflow: {list(workflow.nodes.keys())}")
+    logger.debug(f"[DEBUG] All nodes in workflow: {list(workflow.nodes.keys())}")
     for name, node in workflow.nodes.items():
-        print(f"[DEBUG] Node '{name}' is of type {type(node)} and value: {node}")
+        logger.debug(f"[DEBUG] Node '{name}' is of type {type(node)} and value: {node}")
     
     # Set entry point
     workflow.set_entry_point("router")
@@ -108,6 +106,6 @@ if __name__ == "__main__":
     import asyncio
     from pprint import pprint
 
-    print("🚀 Running standalone agent test...")
+    logger.info("🚀 Running standalone agent test...")
     result = asyncio.run(graph.ainvoke({"input": "How do I hit a flop shot?"}))
     pprint(result)

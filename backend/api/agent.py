@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from backend.agents.golf_langgraph import create_graph
-from backend.tools.utils import debug_print
+from backend.core.logging_config import logger
 import traceback
 
 router = APIRouter()
@@ -16,7 +16,6 @@ async def query_agent(query: Query):
         result = await graph.ainvoke({"input": query.query})
         return {"response": result["final_response"]}
     except Exception as e:
-        print("Exception in /query endpoint:")
-        traceback.print_exc()
+        logger.error("Exception in /query endpoint:", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
