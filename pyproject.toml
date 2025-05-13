@@ -22,7 +22,7 @@ dependencies = [
     "pytest-cov>=4.1.0",  # Coverage reporting
     "tavily-python>=0.3.0",  # Added tavily dependency
     "langgraph>=0.0.15",  # Added langgraph dependency
-    "sentence-transformers>=2.2.2,<3.0.0", #used for embeddings 
+    "sentence-transformers>=3.4.1,<4.0.0", #used for embeddings
     "ragas>=0.2.15,<0.3.0",
 ]
 
