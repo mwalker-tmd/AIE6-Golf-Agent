@@ -6,10 +6,20 @@ from fastapi.staticfiles import StaticFiles
 from backend.api import router as api_router
 from backend.core.logging_config import logger
 from dotenv import load_dotenv
+from starlette.requests import Request
 
 load_dotenv()
 
 app = FastAPI()
+
+from starlette.requests import Request
+
+@app.middleware("http")
+async def log_request_origin(request: Request, call_next):
+    origin = request.headers.get("origin")
+    logger.debug(f"Incoming request from Origin: {origin} | Path: {request.url.path}")
+    response = await call_next(request)
+    return response
 
 # CORS middleware to allow frontend to talk to the backend
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS")
