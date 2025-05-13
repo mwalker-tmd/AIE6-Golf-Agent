@@ -1,7 +1,7 @@
 [project]
-name = "llm-agent-template"
+name = "golf-caddie-ai-agent"
 version = "0.1.0"
-description = "LLM Agent Template"
+description = "Golf Caddie AI Agent"
 requires-python = ">=3.9"
 dependencies = [
     "fastapi>=0.109.0",

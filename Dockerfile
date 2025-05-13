@@ -25,6 +25,8 @@ ENV PATH="/root/.local/bin:$PATH"
 
 # Copy full backend source code
 COPY backend/ ./backend/
+# Copy pyproject.toml from project root
+COPY pyproject.toml ./backend/pyproject.toml
 WORKDIR /app/backend
 
 # Compile dependencies
@@ -36,6 +38,7 @@ RUN uv pip compile pyproject.toml -o requirements.txt
 FROM python:3.11-slim
 WORKDIR /app
 ENV PYTHONPATH=/app/backend
+ENV ENVIRONMENT=production
 
 # Copy backend app code and compiled requirements
 COPY --from=backend-builder /app/backend /app/backend
@@ -51,4 +54,4 @@ COPY --from=frontend-builder /app/frontend/dist /app/backend/static
 EXPOSE 7860
 
 # Start the app
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"] 
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "7860"] 
