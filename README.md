@@ -1,15 +1,13 @@
-# LLM Agent Template
-A template repository for creating LLM apps during my AI Engineering Bootcamp
-
-## Backend Template ([/backend](./backend))
-
-This backend provides a reusable scaffold for building LLM-powered applications with FastAPI.
-
-### Features
-- Modular routing with `/api`
-- Prompt manager and role-based prompt composition
-- Plug-and-play vector DB with FAISS
-- Easily swappable embedding model
+---
+title: TMD Golf Caddie Agent
+emoji: 💻
+colorFrom: green
+colorTo: pink
+sdk: docker
+pinned: false
+license: agpl-3.0
+short_description: An agentic RAG app for my AIE6 Certification Challenge
+---
 
 # Golf Caddie
 
