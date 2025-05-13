@@ -96,6 +96,27 @@ Available log levels:
 - ERROR: Error messages for serious problems
 - CRITICAL: Critical messages for fatal errors
 
+## CORS Configuration
+
+To allow your frontend to communicate with the backend, set the `ALLOWED_ORIGINS` environment variable in your deployment environment (e.g., Hugging Face Spaces).
+
+**Recommended format (JSON array):**
+
+```
+["https://your-space-name.hf.space"]
+```
+
+- You can also use a single string (will be wrapped in a list):
+  ```
+  https://your-space-name.hf.space
+  ```
+- For multiple origins, use:
+  ```
+  ["https://your-space-name.hf.space", "http://localhost:5173"]
+  ```
+
+The backend will automatically parse this variable and configure CORS accordingly.
+
 ## Development Setup
 
 1. Clone the repository

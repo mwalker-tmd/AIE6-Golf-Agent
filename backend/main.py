@@ -1,4 +1,5 @@
 import os
+import json
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -11,12 +12,23 @@ load_dotenv()
 app = FastAPI()
 
 # CORS middleware to allow frontend to talk to the backend
-ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # Development
-    "http://localhost:7860",  # Production
-    "http://127.0.0.1:5173",  # Development alternative
-    "http://127.0.0.1:7860",  # Production alternative
-]
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS")
+if allowed_origins_env:
+    try:
+        # Try to parse as JSON array (recommended: '["url1", "url2"]')
+        ALLOWED_ORIGINS = json.loads(allowed_origins_env)
+        if isinstance(ALLOWED_ORIGINS, str):
+            ALLOWED_ORIGINS = [ALLOWED_ORIGINS]
+    except json.JSONDecodeError:
+        # Fallback: treat as comma-separated string
+        ALLOWED_ORIGINS = [origin.strip() for origin in allowed_origins_env.split(",")]
+else:
+    ALLOWED_ORIGINS = [
+        "http://localhost:5173",  # Development
+        "http://localhost:7860",  # Production
+        "http://127.0.0.1:5173",  # Development alternative
+        "http://127.0.0.1:7860",  # Production alternative
+    ]
 
 app.add_middleware(
     CORSMiddleware,
