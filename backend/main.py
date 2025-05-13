@@ -38,6 +38,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+logger.info(f"CORS ALLOWED_ORIGINS: {ALLOWED_ORIGINS}")
+
+@app.middleware("http")
+async def log_origin_and_path(request, call_next):
+    origin = request.headers.get("origin")
+    logger.debug(f"CORS DEBUG: Origin={origin}, Path={request.url.path}")
+    response = await call_next(request)
+    return response
+
 # Include the API endpoints
 app.include_router(api_router, prefix="/api")
 
